@@ -1,8 +1,13 @@
 package com.example.frinder
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -12,6 +17,7 @@ import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import androidx.core.app.ActivityCompat
+import androidx.core.content.getSystemService
 import kotlinx.android.synthetic.main.activity_main.*
 
 //Global variable
@@ -21,7 +27,9 @@ private val REQUEST_CODE = 100
 private lateinit var slideAnimation: Animation
 private lateinit var slideOutAnimation: Animation
 
-class MainActivity : AppCompatActivity() {
+private lateinit var locationManager: LocationManager
+
+class MainActivity : AppCompatActivity(), LocationListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -29,6 +37,8 @@ class MainActivity : AppCompatActivity() {
         //Use default animation
         slideAnimation = AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left)
         slideOutAnimation = AnimationUtils.loadAnimation(this, android.R.anim.slide_out_right)
+
+        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
 
         //You can animate views here as well.
@@ -73,8 +83,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("MissingPermission")
+    //every 5 seconds I'm getting updates
     private fun registerLocationListener() {
-
+        locationManager.requestLocationUpdates(
+                // LocationManager.GPS_PROVIDER,
+                LocationManager.NETWORK_PROVIDER,
+                5000L,
+                0f,
+                this
+        )
     }
 
     //It can be an array because then you can listen to more than one permissions.
@@ -102,11 +120,10 @@ class MainActivity : AppCompatActivity() {
                 } else { //user set the settings to 'Do not ask again'
                     //Toast.makeText(this, "You need location permission to use this app.", Toast.LENGTH_LONG).show()
                     //new method
+
                     showOverLay()
                 }
-
             }
-
         }
     }
 
@@ -118,5 +135,10 @@ class MainActivity : AppCompatActivity() {
     private fun hideOverLay() {
         overlay_view.visibility = View.GONE
         overlay_view.animation = slideOutAnimation
+    }
+
+    override fun onLocationChanged(location: Location) {
+        Log.d("TAG_H", "location has been updated..." )
+        my_location_textview.text = getString(R.string.location_text, location.longitude, location.latitude)
     }
 }

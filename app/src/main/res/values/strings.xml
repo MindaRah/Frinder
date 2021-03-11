@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Frinder</string>
+    <string name="location_text">Latitude: %,.3f, Longtitude: %,.3f</string>
 </resources>
